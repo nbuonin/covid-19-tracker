@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Mapbox and ReactMap bindings
-import ReactMapGL, {
-    Marker, Popup, NavigationControl, FullscreenControl
-} from 'react-map-gl';
+import { StaticMap } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import {GeoJSON} from 'geojson';
 
@@ -13,7 +11,7 @@ import { GeoJsonLayer } from '@deck.gl/layers';
 const TOKEN = 'pk.eyJ1IjoibmIyNDEzIiwiYSI6ImNrMndkdDByczAwdnkzZ28yN2dwYjF5dWIifQ.4pPTuMIJvdboMXok3Xux-A';
 
 
-const Map = () => {
+const Map = (countyData: any) => {
     const [viewportState, setViewport] = useState({
             viewport: {
                 latitude: 40,
@@ -23,7 +21,6 @@ const Map = () => {
                 pitch: 0
             }
     });
-    const [countyData, setCountyData] = useState();
     const [countyLayer, setCountyLayer] = useState();
 
     useEffect(() => {
@@ -35,9 +32,6 @@ const Map = () => {
             return response.json();
         })
         .then((countyData) => {
-            setCountyData(countyData)
-            // If you need to add data to the county GeoJSON information, this is
-            // the place to do it
             setCountyLayer(new GeoJsonLayer({
                 data: countyData,
                 stroked: true,
@@ -48,25 +42,21 @@ const Map = () => {
         });
     }, []);
 
-    console.log(countyLayer);
     return (
-        <ReactMapGL
-            {...viewportState.viewport}
-            width="100%"
-            height="100%"
-            onViewportChange={viewport => setViewport({viewport})}
-            mapStyle="mapbox://styles/mapbox/light-v9"
-            mapboxApiAccessToken={TOKEN}
-        >
-            {countyLayer &&
-                <DeckGL
-                    layers={[countyLayer]}
-                    viewState={viewportState.viewport}
-                    width={"100%"}
-                    height={'100%'}
-                    controller={true} />
-            }
-        </ReactMapGL>
+        <DeckGL
+            layers={[countyLayer]}
+            initialViewState={viewportState.viewport}
+            width={'100%'}
+            height={'100%'}
+            controller={true}>
+            <StaticMap
+                reuseMaps
+                width={'100%'}
+                height={'100%'}
+                preventStyleDiffing={true}
+                mapStyle='mapbox://styles/mapbox/light-v9'
+                mapboxApiAccessToken={TOKEN} />
+        </DeckGL>
     )
 }
 
