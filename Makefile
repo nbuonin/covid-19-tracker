@@ -1,6 +1,6 @@
-SENTINAL = package.json
+SENTINAL = './node_modules/sentinal' 
 
-$(SENTINAL):
+$(SENTINAL): package.json
 	-rm -rf node_modules
 	npm install
 	touch $(SENTINAL)

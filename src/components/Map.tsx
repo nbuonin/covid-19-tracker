@@ -12,7 +12,10 @@ const TOKEN = 'pk.eyJ1IjoibmIyNDEzIiwiYSI6ImNrMndkdDByczAwdnkzZ28yN2dwYjF5dWIifQ
 
 
 // TODO: Type GeoJSON
-const Map = (countyData: any) => {
+type MapProps = {
+    countyData: any
+}
+const Map = ({countyData}: MapProps) => {
     const [viewportState, setViewport] = useState({
             viewport: {
                 latitude: 40,
@@ -27,7 +30,6 @@ const Map = (countyData: any) => {
     const [countyHoverData, setCountyHoverData] = useState();
     const onCountyHover = (info: any, event: any) => {
         setCountyHoverData({x: info.x, y: info.y, hoveredObject: info.object});
-        /*return true;*/
     }
 
     const onCountyClick = (info: any, event: any) => {
@@ -35,14 +37,18 @@ const Map = (countyData: any) => {
     }
     const renderTooltip = () => {
         const {x, y, hoveredObject} = countyHoverData;
-        console.log(hoveredObject)
+        if(hoveredObject) {
+            console.log(hoveredObject.properties);
+        }
         return (
             hoveredObject && (
                 <div className={""}
                     style={{top: y, left: x, position: 'absolute', pointerEvents: 'none'}}>
                     <div className="arrow"/>
                     <div className="tooltip-inner">
-                        {hoveredObject.properties.NAME}
+                        {hoveredObject.properties.NAME}<br/>
+                        Cases: {hoveredObject.properties.CASES.cases || ''}<br/>
+                        Deaths: {hoveredObject.properties.CASES.deaths || ''}
                     </div>
                 </div>
             )
@@ -50,27 +56,18 @@ const Map = (countyData: any) => {
     }
 
     useEffect(() => {
-        fetch('/data/county.json')
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('HTTP Error');
-            }
-            return response.json();
-        })
-        .then((countyData) => {
-            setCountyLayer(new GeoJsonLayer({
-                data: countyData,
-                pickable: true,
-                stroked: true,
-                filled: true,
-                getFillColor: [0, 0, 0, 10],
-                getLineColor: [0, 0, 0, 255],
-                getLineWidth: 250,
-                onHover: onCountyHover,
-                onClick: onCountyClick
-            }));
-        });
-    }, []);
+        setCountyLayer(new GeoJsonLayer({
+            data: countyData,
+            pickable: true,
+            stroked: true,
+            filled: true,
+            getFillColor: [0, 0, 0, 10],
+            getLineColor: [0, 0, 0, 255],
+            getLineWidth: 250,
+            onHover: onCountyHover,
+            onClick: onCountyClick
+        }));
+    }, [countyData]);
 
     return (
         <>
