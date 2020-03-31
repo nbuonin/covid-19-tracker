@@ -7,15 +7,20 @@ import {GeoJSON} from 'geojson';
 // Deck.gl
 import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
+import { RGBAColor  } from "@deck.gl/aggregation-layers/utils/color-utils";
 
 const TOKEN = 'pk.eyJ1IjoibmIyNDEzIiwiYSI6ImNrMndkdDByczAwdnkzZ28yN2dwYjF5dWIifQ.4pPTuMIJvdboMXok3Xux-A';
 
 
 // TODO: Type GeoJSON
 type MapProps = {
-    countyData: any
+    countyData: any,
+    minCasesPerT: number,
+    maxCasesPerT: number,
+    minDeathsPerT: number,
+    maxDeathsPerT: number
 }
-const Map = ({countyData}: MapProps) => {
+const Map = ({countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPerT}: MapProps) => {
     const [viewportState, setViewport] = useState({
             viewport: {
                 latitude: 40,
@@ -35,6 +40,18 @@ const Map = ({countyData}: MapProps) => {
     const onCountyClick = (info: any, event: any) => {
         console.log('clicking');
     }
+
+    const getCountyFill = (feature: any): RGBAColor => {
+        console.log(feature);
+        if (feature.properties.CASES) {
+            let caseRate = feature.properties.CASES.casesPerThousand;
+            let casePct = caseRate / maxCasesPerT;
+            let alphaChannel = casePct * 255;
+            return [255, 0, 0, alphaChannel];
+        }
+        return [0, 0, 0, 0];
+    }
+
     const renderTooltip = () => {
         const {x, y, hoveredObject} = countyHoverData;
         if(hoveredObject) {
@@ -47,8 +64,9 @@ const Map = ({countyData}: MapProps) => {
                     <div className="arrow"/>
                     <div className="tooltip-inner">
                         {hoveredObject.properties.NAME}<br/>
-                        Cases: {hoveredObject.properties.CASES.cases || ''}<br/>
-                        Deaths: {hoveredObject.properties.CASES.deaths || ''}
+                        Cases: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.cases : '0'}<br/>
+                        Cases Per Thousand: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.casesPerThousand.toFixed(2) : '0'}<br/>
+                        Deaths: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.deaths : '0'}<br/>
                     </div>
                 </div>
             )
@@ -61,7 +79,7 @@ const Map = ({countyData}: MapProps) => {
             pickable: true,
             stroked: true,
             filled: true,
-            getFillColor: [0, 0, 0, 10],
+            getFillColor: getCountyFill,
             getLineColor: [0, 0, 0, 255],
             getLineWidth: 250,
             onHover: onCountyHover,
