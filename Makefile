@@ -1,4 +1,4 @@
-SENTINAL = './node_modules/sentinal' 
+SENTINAL = ./node_modules/sentinal
 
 $(SENTINAL): package.json
 	-rm -rf node_modules
