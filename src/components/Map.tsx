@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 // Mapbox and ReactMap bindings
 import { StaticMap } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -18,10 +18,14 @@ type MapProps = {
     minCasesPerT: number,
     maxCasesPerT: number,
     minDeathsPerT: number,
-    maxDeathsPerT: number
+    maxDeathsPerT: number,
+    activeCounty: number | undefined,
+    setActiveCounty: React.Dispatch<React.SetStateAction<number | undefined>>
 }
-const Map = ({countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPerT}: MapProps) => {
-    const [viewportState, setViewport] = useState({
+const Map = ({
+    countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPerT, activeCounty, setActiveCounty}: MapProps) => {
+
+    const viewportState = {
             viewport: {
                 latitude: 40,
                 longitude: -100,
@@ -29,34 +33,11 @@ const Map = ({countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPe
                 bearing: 0,
                 pitch: 0
             }
-    });
-    const [countyLayer, setCountyLayer] = useState();
+    };
 
     const [countyHoverData, setCountyHoverData] = useState();
-    const onCountyHover = (info: any, event: any) => {
-        setCountyHoverData({x: info.x, y: info.y, hoveredObject: info.object});
-    }
-
-    const onCountyClick = (info: any, event: any) => {
-        console.log('clicking');
-    }
-
-    const getCountyFill = (feature: any): RGBAColor => {
-        console.log(feature);
-        if (feature.properties.CASES) {
-            let caseRate = feature.properties.CASES.casesPerThousand;
-            let casePct = caseRate / maxCasesPerT;
-            let alphaChannel = casePct * 255;
-            return [255, 0, 0, alphaChannel];
-        }
-        return [0, 0, 0, 0];
-    }
-
     const renderTooltip = () => {
         const {x, y, hoveredObject} = countyHoverData;
-        if(hoveredObject) {
-            console.log(hoveredObject.properties);
-        }
         return (
             hoveredObject && (
                 <div className={""}
@@ -73,19 +54,53 @@ const Map = ({countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPe
         )
     }
 
-    useEffect(() => {
-        setCountyLayer(new GeoJsonLayer({
-            data: countyData,
-            pickable: true,
-            stroked: true,
-            filled: true,
-            getFillColor: getCountyFill,
-            getLineColor: [0, 0, 0, 255],
-            getLineWidth: 250,
-            onHover: onCountyHover,
-            onClick: onCountyClick
-        }));
-    }, [countyData]);
+    const onCountyHover = (info: any, event: any) => {
+        setCountyHoverData({x: info.x, y: info.y, hoveredObject: info.object});
+    }
+
+    const onCountyClick = (info: any, event: any) => {
+        setActiveCounty(Number(info.object.properties.GEOID));
+    }
+
+    const getCountyFill = (feature: any): RGBAColor => {
+        if (feature.properties.CASES) {
+            let caseRate = feature.properties.CASES.casesPerThousand;
+            let casePct = caseRate / maxCasesPerT;
+            let alphaChannel = casePct * 255;
+            if (Number(feature.properties.GEOID) === activeCounty) {
+                return [0, 0, 255, 127];
+            }
+            return [255, 0, 0, alphaChannel];
+        }
+        return [0, 0, 0, 0];
+    }
+
+    const getCountyLineColor = (feature: any): RGBAColor => {
+        if (Number(feature.properties.GEOID) === activeCounty) {
+            return [255, 0, 0, 255];
+        }
+        return [0, 0, 0, 255];
+    }
+
+    const getCountyLineWidth = (feature: any): number => {
+        if (Number(feature.properties.GEOID) === activeCounty) {
+            return 150;
+        }
+        return 50;
+    }
+
+    const countyLayer = new GeoJsonLayer({
+        id: 'county-' + activeCounty,
+        data: countyData,
+        pickable: true,
+        stroked: true,
+        filled: true,
+        getFillColor: getCountyFill,
+        getLineColor: getCountyLineColor,
+        getLineWidth: getCountyLineWidth, 
+        onHover: onCountyHover,
+        onClick: onCountyClick
+    });
 
     return (
         <>
