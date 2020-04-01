@@ -27,14 +27,21 @@ const MapContainer = () => {
     const [maxCasesPerT, setMaxCasesPerT] = useState();
     const [minDeathsPerT, setMinDeathsPerT] = useState();
     const [maxDeathsPerT, setMaxDeathsPerT] = useState();
-    const [activeCounty, setActiveCounty] = useState<number>();
+    const [activeCounty, setActiveCounty] = useState<string>();
 
     const ratePerThousand = (cases: number, population: number): number => {
-        if (population == 0) {
+        if (population === 0) {
             return 0;
         }
         return (cases * 1000) / population;
     }
+
+    const BRONX = '36005';
+    const NEW_YORK = '36061';
+    const QUEENS = '36081';
+    const KINGS = '36047';
+    const RICHMOND = '36085';
+    const NYC = [BRONX, NEW_YORK, QUEENS, KINGS, RICHMOND];
 
     useEffect(() => {
         let getData = async () => {
@@ -81,8 +88,11 @@ const MapContainer = () => {
             let minDeathsPerThousand = 0;
             let maxDeathsPerThousand = 0;
             let fipsToCasesTable = data.reduce((acc: any, val: any) => {
+                // Special case for NYC
+                let fips = val.county === 'New York City' ? '99999' : val.fips;
+
                 let d = new Date(val.date);
-                let population = censusLookupTable[val.fips];
+                let population = censusLookupTable[fips];
                 let cases = Number(val.cases);
                 let casesPerThousand = ratePerThousand(cases, population);
                 let deaths = Number(val.deaths);
@@ -101,6 +111,7 @@ const MapContainer = () => {
                     maxDeathsPerThousand = casesPerThousand;
                 }
 
+
                 let datum: FipsCasesMap = {
                     date: d,
                     state: val.state,
@@ -112,16 +123,16 @@ const MapContainer = () => {
                     deathsPerThousand: deathsPerThousand 
                 };
 
-                if (acc[val.fips]) {
-                    let idx = acc[val.fips].findIndex((el: FipsCasesMap) => el.date > d);
+                if (acc[fips]) {
+                    let idx = acc[fips].findIndex((el: FipsCasesMap) => el.date > d);
                     if (idx < 0) {
-                        acc[val.fips].push(datum);
+                        acc[fips].push(datum);
                         return acc;
                     }
-                    acc[val.fips].splice(idx, 0, datum);
+                    acc[fips].splice(idx, 0, datum);
                     return acc;
                 }
-                acc[val.fips] = [datum];
+                acc[fips] = [datum];
                 return acc;
             }, {});
             setFipsToCases(fipsToCasesTable);
@@ -131,6 +142,13 @@ const MapContainer = () => {
             setMaxDeathsPerT(maxDeathsPerThousand);
 
             let annotatedFeatures = cData.features.map((val: any) => {
+                // Special case for NYC, rewrite GEOID to a non-valid FIPS number
+                // Use this to map information to the five boroughs
+                if (NYC.includes(val.properties.GEOID)) {
+                    val.properties.GEOID = '99999';
+                    val.properties['CASES'] = fipsToCasesTable['99999'] || null;
+                    return val;
+                }
                 val.properties['CASES'] = fipsToCasesTable[val.properties.GEOID] || null;
                 return val;
             });

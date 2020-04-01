@@ -1922,6 +1922,7 @@ SUMLEV,REGION,DIVISION,STATE,COUNTY,STNAME,GEOID,CTYNAME,POPESTIMATE2019
 50,1,2,36,119,New York,36119,Westchester County,967506
 50,1,2,36,121,New York,36121,Wyoming County,39859
 50,1,2,36,123,New York,36123,Yates County,24913
+50,,,99,999,New York,99999,New York City Combined,8336817
 40,3,5,37,000,North Carolina,37000,North Carolina,10488084
 50,3,5,37,001,North Carolina,37001,Alamance County,169509
 50,3,5,37,003,North Carolina,37003,Alexander County,37497

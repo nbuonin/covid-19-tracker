@@ -8,6 +8,7 @@ type SidebarProps = {
 const Sidebar = ({countyData}: SidebarProps) => {
     let latestDatum = null;
     if (countyData) {
+        console.log(countyData);
         latestDatum = countyData[countyData.length - 1];
     }
     return (

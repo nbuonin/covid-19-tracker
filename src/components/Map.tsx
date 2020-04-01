@@ -19,8 +19,8 @@ type MapProps = {
     maxCasesPerT: number,
     minDeathsPerT: number,
     maxDeathsPerT: number,
-    activeCounty: number | undefined,
-    setActiveCounty: React.Dispatch<React.SetStateAction<number | undefined>>
+    activeCounty: string | undefined,
+    setActiveCounty: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 const Map = ({
     countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPerT, activeCounty, setActiveCounty}: MapProps) => {
@@ -64,7 +64,7 @@ const Map = ({
     }
 
     const onCountyClick = (info: any, event: any) => {
-        setActiveCounty(Number(info.object.properties.GEOID));
+        setActiveCounty(info.object.properties.GEOID);
     }
 
     const getCountyFill = (feature: any): RGBAColor => {
@@ -74,7 +74,7 @@ const Map = ({
             let caseRate = datum.casesPerThousand;
             let casePct = caseRate / maxCasesPerT;
             let alphaChannel = casePct * 255;
-            if (Number(feature.properties.GEOID) === activeCounty) {
+            if (feature.properties.GEOID === activeCounty) {
                 return [0, 0, 255, 127];
             }
             return [255, 0, 0, alphaChannel];
@@ -83,14 +83,14 @@ const Map = ({
     }
 
     const getCountyLineColor = (feature: any): RGBAColor => {
-        if (Number(feature.properties.GEOID) === activeCounty) {
+        if (feature.properties.GEOID === activeCounty) {
             return [255, 0, 0, 255];
         }
         return [0, 0, 0, 255];
     }
 
     const getCountyLineWidth = (feature: any): number => {
-        if (Number(feature.properties.GEOID) === activeCounty) {
+        if (feature.properties.GEOID === activeCounty) {
             return 150;
         }
         return 50;
