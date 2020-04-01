@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {VictoryContainer, VictoryTheme, VictoryChart, VictoryBar, VictoryAxis} from 'victory';
 
 // TODO: type countyData
 type SidebarProps = {
@@ -7,9 +8,18 @@ type SidebarProps = {
 
 const Sidebar = ({countyData}: SidebarProps) => {
     let latestDatum = null;
+    let graphData = null;
     if (countyData) {
         console.log(countyData);
         latestDatum = countyData[countyData.length - 1];
+        graphData = countyData.reduce((acc: any, val: any) => {
+            acc.push({
+                date: val.date.toLocaleDateString("en-US", {timeZone: "UTC"}),
+                cases: val.cases,
+                deaths: val.deaths
+            });
+            return acc;
+        }, []);
     }
     return (
         <div className="row">
@@ -18,6 +28,17 @@ const Sidebar = ({countyData}: SidebarProps) => {
                 {countyData ? (
                     <>
                     <h2>{latestDatum.county} County, {latestDatum.state}</h2>
+                    <div>
+                        <VictoryChart
+                            theme={VictoryTheme.material}>
+                            <VictoryBar
+                                data={graphData}
+                                x="date"
+                                y="cases" />
+                            <VictoryAxis dependentAxis={true}/>
+                            <VictoryAxis tickCount={4}/>
+                        </VictoryChart>
+                    </div>
                     <table className="table">
                         <tbody>
                             <tr>
