@@ -5,6 +5,7 @@ import './App.css';
 
 import Nav from './components/Nav';
 import Map from './components/Map';
+import Sidebar from './components/Sidebar';
 
 type FipsCasesMap = {
     date: Date,
@@ -23,6 +24,7 @@ const MapContainer = () => {
     const [maxCasesPerT, setMaxCasesPerT] = useState();
     const [minDeathsPerT, setMinDeathsPerT] = useState();
     const [maxDeathsPerT, setMaxDeathsPerT] = useState();
+    const [activeCounty, setActiveCounty] = useState<number>();
 
     const ratePerThousand = (cases: number, population: number): number => {
         if (population == 0) {
@@ -100,6 +102,8 @@ const MapContainer = () => {
                     if (acc[val.fips].date < d) {
                         acc[val.fips] = {
                             date: d,
+                            state: val.state,
+                            county: val.county,
                             population: population,
                             cases: cases,
                             casesPerThousand: casesPerThousand,
@@ -112,6 +116,8 @@ const MapContainer = () => {
                 }
                 acc[val.fips] = {
                     date: d,
+                    state: val.state,
+                    county: val.county,
                     population: population,
                     cases: cases,
                     casesPerThousand: casesPerThousand,
@@ -138,16 +144,20 @@ const MapContainer = () => {
     }, [])
     return (
         <div id="map-container" className="row">
-            <div className="col-9">
+            <div className="col-4">
+                <div className="container">
+                    <Sidebar countyData={activeCounty ? fipsToCases[activeCounty] : null} />
+                </div>
+            </div>
+            <div className="col-8">
                 {countyData &&
                 <Map countyData={countyData}
                      minCasesPerT={minCasesPerT}
                      maxCasesPerT={maxCasesPerT}
                      minDeathsPerT={minDeathsPerT}
-                     maxDeathsPerT={maxDeathsPerT}/>}
-            </div>
-            <div className="col-3">
-                sidebar
+                     maxDeathsPerT={maxDeathsPerT}
+                     activeCounty={activeCounty}
+                     setActiveCounty={setActiveCounty}/>}
             </div>
         </div>
     )
