@@ -9,10 +9,13 @@ import Sidebar from './components/Sidebar';
 
 type FipsCasesMap = {
     date: Date,
+    state: string,
+    county: string,
+    population: number
     cases: number,
-    casePct: number,
+    casesPerThousand: number,
     deaths: number,
-    deathPct: number
+    deathsPerThousand: number
 }
 
 const MapContainer = () => {
@@ -98,23 +101,7 @@ const MapContainer = () => {
                     maxDeathsPerThousand = casesPerThousand;
                 }
 
-                if (acc[val.fips]) {
-                    if (acc[val.fips].date < d) {
-                        acc[val.fips] = {
-                            date: d,
-                            state: val.state,
-                            county: val.county,
-                            population: population,
-                            cases: cases,
-                            casesPerThousand: casesPerThousand,
-                            deaths: deaths,
-                            deathsPerThousand: deathsPerThousand 
-                        }
-                    } else {
-                        return acc;
-                    }
-                }
-                acc[val.fips] = {
+                let datum: FipsCasesMap = {
                     date: d,
                     state: val.state,
                     county: val.county,
@@ -123,7 +110,18 @@ const MapContainer = () => {
                     casesPerThousand: casesPerThousand,
                     deaths: deaths,
                     deathsPerThousand: deathsPerThousand 
+                };
+
+                if (acc[val.fips]) {
+                    let idx = acc[val.fips].findIndex((el: FipsCasesMap) => el.date > d);
+                    if (idx < 0) {
+                        acc[val.fips].push(datum);
+                        return acc;
+                    }
+                    acc[val.fips].splice(idx, 0, datum);
+                    return acc;
                 }
+                acc[val.fips] = [datum];
                 return acc;
             }, {});
             setFipsToCases(fipsToCasesTable);

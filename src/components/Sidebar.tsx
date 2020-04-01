@@ -6,38 +6,42 @@ type SidebarProps = {
 }
 
 const Sidebar = ({countyData}: SidebarProps) => {
+    let latestDatum = null;
+    if (countyData) {
+        latestDatum = countyData[countyData.length - 1];
+    }
     return (
         <div className="row">
             <div className="col-12">
                 <h1>Current US County Data</h1>
                 {countyData ? (
                     <>
-                    <h2>{countyData.county} County, {countyData.state}</h2>
+                    <h2>{latestDatum.county} County, {latestDatum.state}</h2>
                     <table className="table">
                         <tbody>
                             <tr>
                                 <th>Cases:</th>
-                                <td>{countyData.cases}</td>
+                                <td>{latestDatum.cases}</td>
                             </tr>
                             <tr>
                                 <th>Cases per thousand:</th>
-                                <td>{countyData.casesPerThousand.toFixed(2)}</td>
+                                <td>{latestDatum.casesPerThousand.toFixed(2)}</td>
                             </tr>
                             <tr>
                                 <th>Deaths:</th>
-                                <td>{countyData.deaths}</td>
+                                <td>{latestDatum.deaths}</td>
                             </tr>
                             <tr>
                                 <th>Deaths per thousand:</th>
-                                <td>{countyData.deathsPerThousand.toFixed(2)}</td>
+                                <td>{latestDatum.deathsPerThousand.toFixed(2)}</td>
                             </tr>
                             <tr>
                                 <th>Population (2019):</th>
-                                <td>{countyData.population}</td>
+                                <td>{latestDatum.population}</td>
                             </tr>
                             <tr>
                                 <th>Last updated:</th>
-                                <td>{countyData.date.toLocaleDateString("en-US", {timeZone: "UTC"})}</td>
+                                <td>{latestDatum.date.toLocaleDateString("en-US", {timeZone: "UTC"})}</td>
                             </tr>
                         </tbody>
                     </table>

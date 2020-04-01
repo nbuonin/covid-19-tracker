@@ -38,6 +38,11 @@ const Map = ({
     const [countyHoverData, setCountyHoverData] = useState();
     const renderTooltip = () => {
         const {x, y, hoveredObject} = countyHoverData;
+        let datum = null;
+        if (hoveredObject && hoveredObject.properties.CASES) {
+            let idx = hoveredObject.properties.CASES.length - 1;
+            datum = hoveredObject.properties.CASES[idx];
+        }
         return (
             hoveredObject && (
                 <div className={""}
@@ -45,9 +50,9 @@ const Map = ({
                     <div className="arrow"/>
                     <div className="tooltip-inner">
                         {hoveredObject.properties.NAME}<br/>
-                        Cases: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.cases : '0'}<br/>
-                        Cases Per Thousand: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.casesPerThousand.toFixed(2) : '0'}<br/>
-                        Deaths: {hoveredObject.properties.CASES ? hoveredObject.properties.CASES.deaths : '0'}<br/>
+                        Cases: {datum ? datum.cases : '0'}<br/>
+                        Cases Per Thousand: {datum ? datum.casesPerThousand.toFixed(2) : '0'}<br/>
+                        Deaths: {datum ? datum.deaths : '0'}<br/>
                     </div>
                 </div>
             )
@@ -64,7 +69,9 @@ const Map = ({
 
     const getCountyFill = (feature: any): RGBAColor => {
         if (feature.properties.CASES) {
-            let caseRate = feature.properties.CASES.casesPerThousand;
+            let idx = feature.properties.CASES.length - 1;
+            let datum = feature.properties.CASES[idx];
+            let caseRate = datum.casesPerThousand;
             let casePct = caseRate / maxCasesPerT;
             let alphaChannel = casePct * 255;
             if (Number(feature.properties.GEOID) === activeCounty) {
