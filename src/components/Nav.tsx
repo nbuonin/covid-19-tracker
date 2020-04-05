@@ -3,8 +3,8 @@ import Navbar from 'react-bootstrap/Navbar';
 
 const Nav = () => {
     return (
-        <Navbar bg="dark" variant="dark">
-            <Navbar.Brand>Coronavirus Tracker</Navbar.Brand>
+        <Navbar bg="dark" variant="dark" fixed="top">
+            <Navbar.Brand>US County COVID-19 Tracker</Navbar.Brand>
         </Navbar>
     )
 }

@@ -3,7 +3,34 @@
 }
 
 #map-container {
+    padding-top: 56px;
     height: 100%;
 }
 
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 100; /* Behind the navbar */
+    padding-top: 56px;
+}
 
+.sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 56px);
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+@supports ((position: -webkit-sticky) or (position: sticky)) {
+    .sidebar-sticky {
+        position: -webkit-sticky;
+        position: sticky;
+    }
+}
+
+.county-tooltip__table {
+    text-align: left;
+}

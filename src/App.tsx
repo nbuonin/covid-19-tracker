@@ -159,21 +159,23 @@ const MapContainer = () => {
         getData();
     }, [])
     return (
-        <div id="map-container" className="row">
-            <div className="col-4">
-                <div className="container">
-                    <Sidebar countyData={activeCounty ? fipsToCases[activeCounty] : null} />
+        <div id="map-container" className="container-fluid">
+            <div className="row">
+                <div className="col-4">
+                    <div className="container">
+                        <Sidebar countyData={activeCounty ? fipsToCases[activeCounty] : null} />
+                    </div>
                 </div>
-            </div>
-            <div className="col-8">
-                {countyData &&
-                <Map countyData={countyData}
-                     minCasesPerT={minCasesPerT}
-                     maxCasesPerT={maxCasesPerT}
-                     minDeathsPerT={minDeathsPerT}
-                     maxDeathsPerT={maxDeathsPerT}
-                     activeCounty={activeCounty}
-                     setActiveCounty={setActiveCounty}/>}
+                <div className="col-8 sidebar">
+                    {countyData &&
+                    <Map countyData={countyData}
+                         minCasesPerT={minCasesPerT}
+                         maxCasesPerT={maxCasesPerT}
+                         minDeathsPerT={minDeathsPerT}
+                         maxDeathsPerT={maxDeathsPerT}
+                         activeCounty={activeCounty}
+                         setActiveCounty={setActiveCounty}/>}
+                </div>
             </div>
         </div>
     )

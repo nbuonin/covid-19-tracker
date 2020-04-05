@@ -45,14 +45,28 @@ const Map = ({
         }
         return (
             hoveredObject && (
-                <div className={""}
+                <div className={"county-tooltip"}
                     style={{top: y, left: x, position: 'absolute', pointerEvents: 'none'}}>
-                    <div className="arrow"/>
                     <div className="tooltip-inner">
-                        {hoveredObject.properties.NAME}<br/>
-                        Cases: {datum ? datum.cases : '0'}<br/>
-                        Cases Per Thousand: {datum ? datum.casesPerThousand.toFixed(2) : '0'}<br/>
-                        Deaths: {datum ? datum.deaths : '0'}<br/>
+                        {hoveredObject.properties.NAME}
+                        <table className={"county-tooltip__table"}>
+                            <tr>
+                                <td>Cases:</td>
+                                <td>{datum ? datum.cases : '0'}</td>
+                            </tr>
+                            <tr>
+                                <td>Cases/1k:</td>
+                                <td>{datum ? datum.casesPerThousand.toFixed(2) : '0'}</td>
+                            </tr>
+                            <tr>
+                                <td>Deaths:</td>
+                                <td>{datum ? datum.deaths : '0'}</td>
+                            </tr>
+                            <tr>
+                                <td>Deaths1/k:</td>
+                                <td>{datum ? datum.deathsPerThousand.toFixed(2) : '0'}</td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
             )
@@ -73,27 +87,33 @@ const Map = ({
             let datum = feature.properties.CASES[idx];
             let caseRate = datum.casesPerThousand;
             let casePct = caseRate / maxCasesPerT;
-            let alphaChannel = casePct * 255;
+            let offset = 25;
+            let alphaChannel = (casePct * (255 - offset)) + offset;
             if (feature.properties.GEOID === activeCounty) {
-                return [0, 0, 255, 127];
+                return [0, 0, 0, 127];
             }
-            return [255, 0, 0, alphaChannel];
+            // sea 202 210 211 cad2d3
+            // land 240 240 239 f0f0ef
+
+            // Lighter, best guess
+            // return [92, 86, 136, alphaChannel];
+            // Triadic of above land and sea colors
+            // return [163, 161, 147, alphaChannel];
+            // Complement of the triadic
+            return [65, 61, 87, alphaChannel];
         }
         return [0, 0, 0, 0];
     }
 
     const getCountyLineColor = (feature: any): RGBAColor => {
-        if (feature.properties.GEOID === activeCounty) {
-            return [255, 0, 0, 255];
-        }
         return [0, 0, 0, 255];
     }
 
     const getCountyLineWidth = (feature: any): number => {
         if (feature.properties.GEOID === activeCounty) {
-            return 150;
+            return 400;
         }
-        return 50;
+        return 150;
     }
 
     const countyLayer = new GeoJsonLayer({
@@ -110,7 +130,7 @@ const Map = ({
     });
 
     return (
-        <>
+        <div className="sidebar-sticky">
         <DeckGL
             layers={[countyLayer]}
             initialViewState={viewportState.viewport}
@@ -126,7 +146,7 @@ const Map = ({
                 mapboxApiAccessToken={TOKEN} />
         </DeckGL>
         {countyHoverData && renderTooltip()}
-        </>
+        </div>
     )
 }
 
