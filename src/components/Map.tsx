@@ -9,21 +9,25 @@ import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { RGBAColor  } from "@deck.gl/aggregation-layers/utils/color-utils";
 
+import {MappedData} from '../App';
+
 const TOKEN = 'pk.eyJ1IjoibmIyNDEzIiwiYSI6ImNrMndkdDByczAwdnkzZ28yN2dwYjF5dWIifQ.4pPTuMIJvdboMXok3Xux-A';
 
 
 // TODO: Type GeoJSON
 type MapProps = {
     countyData: any,
-    minCasesPerT: number,
+    maxCases: number,
     maxCasesPerT: number,
-    minDeathsPerT: number,
+    maxDeaths: number,
     maxDeathsPerT: number,
+    maxDeathsPerCase: number,
     activeCounty: string | undefined,
-    setActiveCounty: React.Dispatch<React.SetStateAction<string | undefined>>
+    setActiveCounty: React.Dispatch<React.SetStateAction<string | undefined>>,
+    mappedData: MappedData
 }
 const Map = ({
-    countyData, minCasesPerT, maxCasesPerT, minDeathsPerT, maxDeathsPerT, activeCounty, setActiveCounty}: MapProps) => {
+    countyData, maxCases, maxCasesPerT, maxDeaths, maxDeathsPerT, maxDeathsPerCase, activeCounty, setActiveCounty, mappedData}: MapProps) => {
 
     const viewportState = {
             viewport: {
@@ -50,22 +54,28 @@ const Map = ({
                     <div className="tooltip-inner">
                         {hoveredObject.properties.NAME}
                         <table className={"county-tooltip__table"}>
-                            <tr>
-                                <td>Cases:</td>
-                                <td>{datum ? datum.cases : '0'}</td>
-                            </tr>
-                            <tr>
-                                <td>Cases/1k:</td>
-                                <td>{datum ? datum.casesPerThousand.toFixed(2) : '0'}</td>
-                            </tr>
-                            <tr>
-                                <td>Deaths:</td>
-                                <td>{datum ? datum.deaths : '0'}</td>
-                            </tr>
-                            <tr>
-                                <td>Deaths1/k:</td>
-                                <td>{datum ? datum.deathsPerThousand.toFixed(2) : '0'}</td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td>Cases:</td>
+                                    <td>{datum ? datum.cases : '0'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cases/1k:</td>
+                                    <td>{datum ? datum.casesPerThousand.toFixed(2) : '0'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Deaths:</td>
+                                    <td>{datum ? datum.deaths : '0'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Deaths/1k:</td>
+                                    <td>{datum ? datum.deathsPerThousand.toFixed(2) : '0'}</td>
+                                </tr>
+                                <tr>
+                                    <td>Deaths/Case:</td>
+                                    <td>{datum ? datum.deathsPerCase.toFixed(2) : '0'}</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -85,10 +95,21 @@ const Map = ({
         if (feature.properties.CASES) {
             let idx = feature.properties.CASES.length - 1;
             let datum = feature.properties.CASES[idx];
-            let caseRate = datum.casesPerThousand;
-            let casePct = caseRate / maxCasesPerT;
+            let shadePct = 0;
+            if (mappedData === 'cases') {
+                shadePct = datum.cases / maxCases;
+            } else if (mappedData === 'casesPerK') {
+                shadePct = datum.casesPerThousand / maxCasesPerT;
+            } else if (mappedData === 'deaths') {
+                shadePct = datum.deaths / maxDeaths;
+            } else if (mappedData === 'deathsPerK') {
+                shadePct = datum.deathsPerThousand / maxDeathsPerT;
+            } else if (mappedData === 'deathsPerCase') {
+                shadePct = datum.deathsPerCase / maxDeathsPerCase;
+            }
+
             let offset = 25;
-            let alphaChannel = (casePct * (255 - offset)) + offset;
+            let alphaChannel = shadePct ? (shadePct * (255 - offset)) + offset : 0;
             if (feature.properties.GEOID === activeCounty) {
                 return [0, 0, 0, 127];
             }
@@ -117,7 +138,7 @@ const Map = ({
     }
 
     const countyLayer = new GeoJsonLayer({
-        id: 'county-' + activeCounty,
+        id: 'county-' + activeCounty + mappedData,
         data: countyData,
         pickable: true,
         stroked: true,

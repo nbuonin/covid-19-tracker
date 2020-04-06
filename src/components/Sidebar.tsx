@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import {VictoryContainer, VictoryTheme, VictoryChart, VictoryBar, VictoryAxis} from 'victory';
+import React from 'react';
+import {VictoryTheme, VictoryChart, VictoryBar, VictoryAxis} from 'victory';
 
 // TODO: type countyData
 type SidebarProps = {
@@ -18,6 +18,7 @@ const Sidebar = ({countyData}: SidebarProps) => {
                 casesPerThousand: val.casesPerThousand,
                 deaths: val.deaths,
                 deathsPerThousand: val.deathsPerThousand,
+                deathsPerCase: val.deathsPerCase
             });
             return acc;
         }, []);
@@ -49,6 +50,10 @@ const Sidebar = ({countyData}: SidebarProps) => {
                             <tr>
                                 <th>Deaths per thousand:</th>
                                 <td>{latestDatum.deathsPerThousand.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <th>Deaths per case:</th>
+                                <td>{latestDatum.deathsPerCase.toFixed(2)}</td>
                             </tr>
                             <tr>
                                 <th>Population (2019):</th>

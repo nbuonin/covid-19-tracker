@@ -15,19 +15,92 @@ type FipsCasesMap = {
     cases: number,
     casesPerThousand: number,
     deaths: number,
-    deathsPerThousand: number
+    deathsPerThousand: number,
+    deathsPerCase: number
+}
+
+export type MappedData = 'cases' | 'casesPerK' | 'deaths' | 'deathsPerK' | 'deathsPerCase';
+
+type MapDataControlsProps = {
+    mappedData: MappedData,
+    setMappedData: React.Dispatch<React.SetStateAction<MappedData>>
+}
+
+const MapDataControls = ({mappedData, setMappedData}: MapDataControlsProps) => {
+    const handleMapDataOption = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMappedData(e.target.value as MappedData);
+    }
+    return (
+        <div id={'map-data-controls'}>
+            <div className='form-check'>
+                <input
+                    className='form-check-input'
+                    type='radio'
+                    name='mapped-data'
+                    id='mapped-data-casesK'
+                    value='casesPerK'
+                    checked={mappedData === 'casesPerK' ? true : false}
+                    onChange={handleMapDataOption}/>
+                <label className='form-check-label' htmlFor="mapped-data-casesK">Cases/1K</label>
+            </div>
+            <div className='form-check'>
+                <input
+                    className='form-check-input'
+                    type='radio'
+                    name='mapped-data'
+                    id='mapped-data-cases'
+                    value='cases'
+                    checked={mappedData === 'cases' ? true : false}
+                    onChange={handleMapDataOption}/>
+                <label className='form-check-label' htmlFor="mapped-data-cases">Cases</label>
+            </div>
+            <div className='form-check'>
+                <input
+                    className='form-check-input'
+                    type='radio'
+                    name='mapped-data'
+                    id='mapped-data-deathsK'
+                    value='deathsPerK'
+                    checked={mappedData === 'deathsPerK' ? true : false}
+                    onChange={handleMapDataOption}/>
+                <label className='form-check-label' htmlFor="mapped-data-deathsK">Deaths/1K</label>
+            </div>
+            <div className='form-check'>
+                <input
+                    className='form-check-input'
+                    type='radio'
+                    name='mapped-data'
+                    id='mapped-data-deaths'
+                    value='deaths'
+                    checked={mappedData === 'deaths' ? true : false}
+                    onChange={handleMapDataOption}/>
+                <label className='form-check-label' htmlFor="mapped-data-deaths">Deaths</label>
+            </div>
+            <div className='form-check'>
+                <input
+                    className='form-check-input'
+                    type='radio'
+                    name='mapped-data'
+                    id='mapped-data-deathsPerCase'
+                    value='deathsPerCase'
+                    checked={mappedData === 'deathsPerCase' ? true : false}
+                    onChange={handleMapDataOption}/>
+                <label className='form-check-label' htmlFor="mapped-data-deaths">Deaths/Case</label>
+            </div>
+        </div>
+    )
 }
 
 const MapContainer = () => {
     const [countyData, setCountyData] = useState();
-    const [virusData, setVirusData] = useState();
-    const [censusTable, setCensusTable] = useState();
     const [fipsToCases, setFipsToCases] = useState();
-    const [minCasesPerT, setMinCasesPerT] = useState();
+    const [maxCases, setMaxCases] = useState();
     const [maxCasesPerT, setMaxCasesPerT] = useState();
-    const [minDeathsPerT, setMinDeathsPerT] = useState();
+    const [maxDeaths, setMaxDeaths] = useState();
     const [maxDeathsPerT, setMaxDeathsPerT] = useState();
+    const [maxDeathsPerCase, setMaxDeathsPerCase] = useState();
     const [activeCounty, setActiveCounty] = useState<string>();
+    const [mappedData, setMappedData] = useState<MappedData>('casesPerK');
 
     const ratePerThousand = (cases: number, population: number): number => {
         if (population === 0) {
@@ -36,14 +109,15 @@ const MapContainer = () => {
         return (cases * 1000) / population;
     }
 
-    const BRONX = '36005';
-    const NEW_YORK = '36061';
-    const QUEENS = '36081';
-    const KINGS = '36047';
-    const RICHMOND = '36085';
-    const NYC = [BRONX, NEW_YORK, QUEENS, KINGS, RICHMOND];
 
     useEffect(() => {
+        const BRONX = '36005';
+        const NEW_YORK = '36061';
+        const QUEENS = '36081';
+        const KINGS = '36047';
+        const RICHMOND = '36085';
+        const NYC = [BRONX, NEW_YORK, QUEENS, KINGS, RICHMOND];
+
         let getData = async () => {
             // County GeoJSON
             let cResponse = await fetch('/data/county.json')
@@ -59,7 +133,6 @@ const MapContainer = () => {
             }
             let vCsvString = await vResponse.text();
             let {data, errors, meta} = Papa.parse(vCsvString, {header: true});
-            setVirusData(data);
 
             // Census Data
             let censusResponse = await fetch('/data/census.csv');
@@ -72,7 +145,6 @@ const MapContainer = () => {
                 acc[val.GEOID] = Number(val.POPESTIMATE2019);
                 return acc;
             }, {});
-            setCensusTable(censusLookupTable);
 
             // You need to relate a FIPS to the most recent count
             // You also need to annotate the GeoJSON with case numbers
@@ -83,11 +155,16 @@ const MapContainer = () => {
 
             // Then iterate over the GeoJSON, and annotate with case numbers by looking up the fips
             // TODO: implement types
-            let minCasesPerThousand = 0;
-            let maxCasesPerThousand = 0;
-            let minDeathsPerThousand = 0;
-            let maxDeathsPerThousand = 0;
+            let _maxCases = 0;
+            let _maxCasesPerThousand = 0;
+            let _maxDeaths = 0;
+            let _maxDeathsPerThousand = 0;
+            let _maxDeathsPerCase = 0;
             let fipsToCasesTable = data.reduce((acc: any, val: any) => {
+                // Ignore Unknown
+                if (val.county === 'Unknown') {
+                    return acc;
+                }
                 // Special case for NYC
                 let fips = val.county === 'New York City' ? '99999' : val.fips;
 
@@ -97,18 +174,22 @@ const MapContainer = () => {
                 let casesPerThousand = ratePerThousand(cases, population);
                 let deaths = Number(val.deaths);
                 let deathsPerThousand = ratePerThousand(deaths, population);
+                let deathsPerCase = cases > 0 ? deaths / cases : 0;
                 
-                if (casesPerThousand < minCasesPerThousand) {
-                    minCasesPerThousand = casesPerThousand;
+                if (cases > _maxCases) {
+                    _maxCases = cases;
                 }
-                if (casesPerThousand > maxCasesPerThousand) {
-                    maxCasesPerThousand = casesPerThousand;
+                if (casesPerThousand > _maxCasesPerThousand) {
+                    _maxCasesPerThousand = casesPerThousand;
                 }
-                if (casesPerThousand < minDeathsPerThousand) {
-                    minDeathsPerThousand = casesPerThousand;
+                if (deaths > _maxDeaths) {
+                    _maxDeaths = deaths;
                 }
-                if (casesPerThousand > maxDeathsPerThousand) {
-                    maxDeathsPerThousand = casesPerThousand;
+                if (deathsPerThousand > _maxDeathsPerThousand) {
+                    _maxDeathsPerThousand = deathsPerThousand;
+                }
+                if (deathsPerCase > _maxDeathsPerCase) {
+                    _maxDeathsPerCase = deathsPerCase;
                 }
 
 
@@ -120,7 +201,8 @@ const MapContainer = () => {
                     cases: cases,
                     casesPerThousand: casesPerThousand,
                     deaths: deaths,
-                    deathsPerThousand: deathsPerThousand 
+                    deathsPerThousand: deathsPerThousand,
+                    deathsPerCase: deathsPerCase
                 };
 
                 if (acc[fips]) {
@@ -136,10 +218,11 @@ const MapContainer = () => {
                 return acc;
             }, {});
             setFipsToCases(fipsToCasesTable);
-            setMinCasesPerT(minCasesPerThousand);
-            setMaxCasesPerT(maxCasesPerThousand);
-            setMinDeathsPerT(minDeathsPerThousand);
-            setMaxDeathsPerT(maxDeathsPerThousand);
+            setMaxCases(_maxCases);
+            setMaxCasesPerT(_maxCasesPerThousand);
+            setMaxDeaths(_maxDeaths);
+            setMaxDeathsPerT(_maxDeathsPerThousand);
+            setMaxDeathsPerCase(_maxDeathsPerCase);
 
             let annotatedFeatures = cData.features.map((val: any) => {
                 // Special case for NYC, rewrite GEOID to a non-valid FIPS number
@@ -157,7 +240,9 @@ const MapContainer = () => {
         }
 
         getData();
-    }, [])
+        console.log(maxDeathsPerCase);
+    }, []);
+
     return (
         <div id="map-container" className="container-fluid">
             <div className="row">
@@ -168,13 +253,21 @@ const MapContainer = () => {
                 </div>
                 <div className="col-8 sidebar">
                     {countyData &&
+                    <>
+                    <MapDataControls
+                        mappedData={mappedData} 
+                        setMappedData={setMappedData} />
                     <Map countyData={countyData}
-                         minCasesPerT={minCasesPerT}
+                         maxCases={maxCases}
                          maxCasesPerT={maxCasesPerT}
-                         minDeathsPerT={minDeathsPerT}
+                         maxDeaths={maxDeaths}
                          maxDeathsPerT={maxDeathsPerT}
+                         maxDeathsPerCase={maxDeathsPerCase}
                          activeCounty={activeCounty}
-                         setActiveCounty={setActiveCounty}/>}
+                         setActiveCounty={setActiveCounty}
+                         mappedData={mappedData}/>
+                    </>
+                    }
                 </div>
             </div>
         </div>
