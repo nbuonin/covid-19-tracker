@@ -11,7 +11,7 @@ import { RGBAColor  } from "@deck.gl/aggregation-layers/utils/color-utils";
 
 import {MappedData} from '../App';
 
-const TOKEN = 'pk.eyJ1IjoibmIyNDEzIiwiYSI6ImNrMndkdDByczAwdnkzZ28yN2dwYjF5dWIifQ.4pPTuMIJvdboMXok3Xux-A';
+const TOKEN = 'pk.eyJ1IjoibmJ1b25pbiIsImEiOiJjazhvaHdqMm4xOWI3M21tdzZwaGk1MTIyIn0.3b86Z8DJe70ypDfzIyAjpA';
 
 
 // TODO: Type GeoJSON

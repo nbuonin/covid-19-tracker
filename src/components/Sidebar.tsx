@@ -107,9 +107,27 @@ const Sidebar = ({countyData}: SidebarProps) => {
                     </div>
                     </>
                 ) : (
-                    <p>
-                        Select a county from the map to view Coronavirus case numbers.
-                    </p>
+                    <>
+                        <p>
+                            Select a county from the map to view Coronavirus case numbers.
+                        </p>
+                        <h2>About</h2>
+                        <p>
+                            This map visualizes COVID-19 cases in US counties.
+                            It uses data from the New York Times, based on
+                            reports from state and local health agencies. The New
+                            York Times' maps can be found <a href="https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html">here</a>.
+                        </p>
+                        <h2>Licenses</h2>
+                        <p>
+                            The code for this project is licensed under GNU GPL
+                            v3.0. This site makes no warranty as to the
+                            accuracy of the data set, and is intended for
+                            informational purposes only. The data used is
+                            accessed under <a href="https://github.com/nytimes/covid-19-data">license</a> by
+                            the New York Times.
+                        </p>
+                    </>
                 )}
             </div>
         </div>
