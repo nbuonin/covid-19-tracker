@@ -14,4 +14,7 @@ runserver: $(SENTINAL)
 test: $(SENTINAL)
 	npm test
 
-.PHONY: build runserver test
+deploy: $(SENTINAL)
+	npm run deploy 
+
+.PHONY: build runserver test deploy
