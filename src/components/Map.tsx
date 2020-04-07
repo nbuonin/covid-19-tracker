@@ -72,8 +72,8 @@ const Map = ({
                                     <td>{datum ? datum.deathsPerThousand.toFixed(2) : '0'}</td>
                                 </tr>
                                 <tr>
-                                    <td>Deaths/Case:</td>
-                                    <td>{datum ? datum.deathsPerCase.toFixed(2) : '0'}</td>
+                                    <td>Fatality Rate:</td>
+                                    <td>{datum ? (datum.deathsPerCase * 100).toFixed(2) : '0'}%</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -52,8 +52,8 @@ const Sidebar = ({countyData}: SidebarProps) => {
                                 <td>{latestDatum.deathsPerThousand.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <th>Deaths per case:</th>
-                                <td>{latestDatum.deathsPerCase.toFixed(2)}</td>
+                                <th>Fatality Rate*:</th>
+                                <td>{((latestDatum.deaths / latestDatum.cases) * 100).toFixed(2)}%</td>
                             </tr>
                             <tr>
                                 <th>Population (2019):</th>
@@ -102,6 +102,17 @@ const Sidebar = ({countyData}: SidebarProps) => {
                                 x="date"
                                 y="deathsPerThousand" />
                             <VictoryAxis label="Deaths/1k" dependentAxis={true}/>
+                            <VictoryAxis tickCount={4}/>
+                        </VictoryChart>
+                    </div>
+                    <div>
+                        <VictoryChart
+                            theme={VictoryTheme.material}>
+                            <VictoryBar
+                                data={graphData}
+                                x="date"
+                                y={(datum) => datum.deathsPerCase * 100} />
+                            <VictoryAxis label="Fatality Rate" dependentAxis={true}/>
                             <VictoryAxis tickCount={4}/>
                         </VictoryChart>
                     </div>

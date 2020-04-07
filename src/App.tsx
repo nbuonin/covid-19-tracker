@@ -85,7 +85,7 @@ const MapDataControls = ({mappedData, setMappedData}: MapDataControlsProps) => {
                     value='deathsPerCase'
                     checked={mappedData === 'deathsPerCase' ? true : false}
                     onChange={handleMapDataOption}/>
-                <label className='form-check-label' htmlFor="mapped-data-deaths">Deaths/Case</label>
+                <label className='form-check-label' htmlFor="mapped-data-deaths">Fatality Rate</label>
             </div>
         </div>
     )
@@ -174,7 +174,7 @@ const MapContainer = () => {
                 let casesPerThousand = ratePerThousand(cases, population);
                 let deaths = Number(val.deaths);
                 let deathsPerThousand = ratePerThousand(deaths, population);
-                let deathsPerCase = cases > 0 ? deaths / cases : 0;
+                let deathsPerCase = cases > 500 ? deaths / cases : 0;
                 
                 if (cases > _maxCases) {
                     _maxCases = cases;
